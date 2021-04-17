@@ -1,4 +1,4 @@
-use rltk::{ RGB, Rltk, RandomNumberGenerator };
+use rltk::{ RGB, Rltk, RandomNumberGenerator, Point, BaseMap, Algorithm2D };
 use std::cmp::{max, min};
 use super::{Rect};
 use specs::prelude::*;
@@ -12,7 +12,9 @@ pub struct Map {
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rect>,
     pub width: i32,
-    pub height: i32
+    pub height: i32,
+    pub revealed_tiles: Vec<bool>,
+    pub visible_tiles: Vec<bool>
 }
 
 impl Map {
@@ -54,7 +56,9 @@ impl Map {
             tiles: vec![TileType::Wall; 80*50],
             rooms: Vec::new(),
             width: 80,
-            height: 50
+            height: 50,
+            revealed_tiles: vec![false; 80*50],
+            visible_tiles: vec![false; 80*50]
         };
 
         const MAX_ROOMS : i32 = 30;
@@ -99,20 +103,42 @@ impl Map {
     }
 }
 
+impl Algorithm2D for Map {
+    fn dimensions(&self) -> Point {
+        Point::new(self.width, self.height)
+    }
+}
+
+impl BaseMap for Map {
+    fn is_opaque(&self, idx: usize) -> bool {
+        self.tiles[idx as usize] == TileType::Wall
+    }
+}
+
 pub fn draw_map(ecs: &World, ctx : &mut Rltk) {
     let map = ecs.fetch::<Map>();
     
     let mut x = 0;
     let mut y = 0;
+       
+    for (idx, tile) in map.tiles.iter().enumerate() {
+        if map.revealed_tiles[idx] {
+            let glyph;
+            let mut fg;
 
-    for tile in map.tiles.iter() {
-        match tile {
-            TileType::Floor => {
-                ctx.set(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), rltk::to_cp437('.'));
+            match tile {
+                TileType::Floor => {
+                    glyph = rltk::to_cp437('.');
+                    fg = RGB::from_f32(0.0, 0.5, 0.5);
+                }
+                TileType::Wall => {
+                    glyph = rltk::to_cp437('#');
+                    fg = RGB::from_f32(0., 1.0, 0.);
+                }
             }
-            TileType::Wall => {
-                ctx.set(x, y, RGB::from_f32(0.0, 0.5, 0.0), RGB::from_f32(0., 0., 0.), rltk::to_cp437('#'));
-            }
+
+            if !map.visible_tiles[idx] { fg = fg.to_greyscale() }
+            ctx.set(x, y, fg, RGB::from_f32(0., 0., 0.), glyph);
         }
 
         x += 1;
