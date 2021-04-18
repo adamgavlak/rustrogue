@@ -8,6 +8,7 @@ pub enum TileType {
     Wall, Floor
 }
 
+#[derive(Default)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rect>,
