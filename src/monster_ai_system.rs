@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use super::{Viewshed, Monster, Name, Map, Position, WantsToMelee, RunState};
-use rltk::{Point, console};
+use rltk::{Point};
 
 pub struct MonsterAI {}
 

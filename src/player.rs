@@ -1,4 +1,4 @@
-use rltk::{VirtualKeyCode, Rltk, Point, console};
+use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use super::{Position, Player, State, Map, Viewshed, RunState, CombatStats, WantsToMelee};
 use std::cmp::{min, max};
